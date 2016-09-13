@@ -1,9 +1,9 @@
 #-*- coding: utf-8 -*-
 
-# (c) 2013-2014 Squizduos Labs LLC. 
+# (c) 2013-2014 Squizduos Labs LLC.
 # This code is licensed under the GNU General Public License, version 2 or later.
 
-# (c) 2013-2014 Семён Бочкарёв. 
+# (c) 2013-2014 Семён Бочкарёв.
 # Данный код распространяется на условиях лицензии GNU GPL версии 2 или более поздней
 
 import lxml.html
