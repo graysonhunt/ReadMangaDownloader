@@ -1,15 +1,18 @@
 #-*- coding: utf-8 -*-
 
-# (c) 2013-2014 Squizduos Labs LLC.
-# This code is licensed under the GNU General Public License, version 2 or later.
+# (c) 2016 Zack1409 Labs LLC.
+# This code is licensed under the GNU General Public License, version 3 or later.
 
-# (c) 2013-2014 Семён Бочкарёв.
-# Данный код распространяется на условиях лицензии GNU GPL версии 2 или более поздней
+# (c) 2016 Илья Коваленко.
+# Данный код распространяется на условиях лицензии GNU GPL версии 3 или более поздней
 
 import lxml.html
 import urllib.request
 import os
+
+# Количество страниц равно 0
 pages = 0
+# Прогресс равен 0
 progress = 0
 
 class Chapter:
@@ -44,7 +47,6 @@ class MangaDownloader:
                         lnk = chapter.attrib['href']
                         lnk += "?mature=1"
                         links.append(lnk)
-						#links.append(chapter.attrib['href'])
         if len(links) == 0:
             return 2
         return reversed(links)
@@ -89,7 +91,7 @@ class MangaDownloader:
             #Скачиваем изображение в нужную папку
             while True:
                 if errCount > 100: #тк лочится только один поток то от сотни проверок хуже не станет
-                    print('Error while downloading file ' + download_link)
+                    print('Ошибка при загрузке файлов' + download_link)
                     break
                 try:
                     image_file = urllib.request.urlretrieve(download_link, os.path.join(path, str(imgNum).zfill(4) + "." + fileType))
