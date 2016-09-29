@@ -14,7 +14,7 @@ from multiprocessing.dummy import Pool as WorkerPool
 while True:
 
     # Вводим ссылку на сайт
-    print("Введите ссылку на мангу с сайта readmanga.me или mintmanga.com")
+    print("\nВведите ссылку на мангу с сайта readmanga.me или mintmanga.com")
 
     # Создаем переменную которая получает нашу ссылку
     link = input()
@@ -43,7 +43,7 @@ while True:
         chapters_list = []
         # Получаем список глав если проблемы с подключением к сайту (1) или в манге нет глав (2) пишем ошибку
         if chapters == 1 or chapters == 2:
-            print('Невозможно скачать мангу в данный момент.')
+            print('\nНевозможно скачать мангу в данный момент.')
         else:
             for chapter in chapters:
                 # Делим ссылку полную (/mintmanga.com/evil_blade/vol1/5?mature=1) по / и кидаем в список
@@ -58,51 +58,58 @@ while True:
                     ch = -1
                 # Создаем словарь с полной ссылкой (/evil_blade/vol1/5?mature=1) томом (1) и глава (5)
                 chapters_list.append(dict(link=chapter, vol=vol, ch=ch))
-            print("Введите номера глав, которые вы хотите скачать, через пробел, если хотите скачать все главы, нажмите ENTER")
-            # TODO проверка на несуществующие главы
+            print("\nВведите номера глав, которые вы хотите скачать, через пробел, если хотите скачать все главы, нажмите ENTER")
+
             input_string = input()
-            if (input_string.find('-') != -1):
-                num = input_string.find('-')
-                l_num = int(input_string[:num])
-                r_num = int(input_string[num + 1:])
-                chapters_to_download_list = list()
-                for a in range(l_num, r_num + 1):
-                    chapters_to_download_list.append(a)
+            if input_string in chapters_list:
+                if (input_string.find('-') != -1):
+                    num = input_string.find('-')
+                    l_num = int(input_string[:num])
+                    r_num = int(input_string[num + 1:])
+                    chapters_to_download_list = list()
+                    for a in range(l_num, r_num + 1):
+                        chapters_to_download_list.append(a)
+                    download_all = False
+                else:
+                    chapters_to_download_list = list(
+                        map(int, input_string.split()))
                 download_all = False
+                if len(chapters_to_download_list) == 0:
+                    download_all = True
+                # TODO сделать выбор папки куда качать
+                work_directory = os.curdir
+                if not os.path.exists(os.path.join(work_directory, manga_name)):
+                    os.mkdir(os.path.join(work_directory, manga_name))
+                pool = WorkerPool(len(chapters_list))  # лимита на закачку нет
+                # Создать папки для томов и глав
+                for chapter in chapters_list:
+                    if (ch != -1):
+                        if (download_all == True) or (chapter['ch'] in chapters_to_download_list):
+                            vol_path = os.path.join(
+                                work_directory, manga_name, str(chapter['vol']).zfill(4))
+                            if not os.path.exists(vol_path):
+                                os.mkdir(vol_path)
+                            ch_path = os.path.join(work_directory, manga_name, str(
+                                chapter['vol']).zfill(4), str(chapter['ch']).zfill(4))
+                            if not os.path.exists(ch_path):
+                                os.mkdir(ch_path)
+                            # Скачивание манги в папку
+
+                            pool.apply_async(md.MangaDownloader.download_chapters, (
+                                'http://' + link_components.netloc + chapter['link'], ch_path))
+
+                lastProgress = 0
+                while md.progress < md.pages or md.pages == 0:
+                    if lastProgress != md.progress:
+                        print("\rloaded " + str(md.progress) +
+                              "/" + str(md.pages), end="")
+                        lastProgress = md.progress
+                    print("\ndownload complete")
+                pool.close()
+                pool.join()
             else:
-                chapters_to_download_list = list(
-                    map(int, input_string.split()))
-            download_all = False
-            if len(chapters_to_download_list) == 0:
-                download_all = True
-            # TODO сделать выбор папки куда качать
-            work_directory = os.curdir
-            if not os.path.exists(os.path.join(work_directory, manga_name)):
-                os.mkdir(os.path.join(work_directory, manga_name))
-            pool = WorkerPool(len(chapters_list))  # лимита на закачку нет
-            # Создать паки для томов и глав
-            for chapter in chapters_list:
-                if (ch != -1):
-                    if (download_all == True) or (chapter['ch'] in chapters_to_download_list):
-                        vol_path = os.path.join(
-                            work_directory, manga_name, str(chapter['vol']).zfill(4))
-                        if not os.path.exists(vol_path):
-                            os.mkdir(vol_path)
-                        ch_path = os.path.join(work_directory, manga_name, str(
-                            chapter['vol']).zfill(4), str(chapter['ch']).zfill(4))
-                        if not os.path.exists(ch_path):
-                            os.mkdir(ch_path)
-                        # Скачивание манги в папку
+                print ("В этой манге нет такой главы")
 
-                        pool.apply_async(md.MangaDownloader.download_chapters, (
-                            'http://' + link_components.netloc + chapter['link'], ch_path))
+    else:
+         print("\nЭта ссылка не на readmanga или mintmanga")
 
-            lastProgress = 0
-            while md.progress < md.pages or md.pages == 0:
-                if lastProgress != md.progress:
-                    print("\rloaded " + str(md.progress) +
-                          "/" + str(md.pages), end="")
-                    lastProgress = md.progress
-            print("\ndownload complete")
-            pool.close()
-            pool.join()
